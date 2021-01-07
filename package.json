@@ -6,14 +6,15 @@
   "scripts": {
     "start": "webpack serve",
     "test": "jest --passWithNoTests --no-cache --runInBand",
-    "test:watch": "npm run -- --watch",
+    "test:watch": "npm run test -- --watch",
     "test:staged": "npm test --findRelatedTests",
-    "test:ci": "npm run -- --coverage"
+    "test:ci": "npm run test -- --coverage"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@testing-library/react": "^11.2.2",
     "@types/axios": "^0.14.0",
     "@types/faker": "^5.1.5",
     "@types/jest": "^26.0.19",
