@@ -9,9 +9,8 @@ import Context from '@/presentation/context/form'
 type Props = React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
 
 const FormStatus: React.FC<Props> = (props: Props) => {
-  const { state, errorState } = useContext(Context)
-  const { isLoading } = state
-  const { main } = errorState
+  const { state } = useContext(Context)
+  const { isLoading, mainError } = state
 
   return (
     <div data-testid="error-wrap" className={styles.errorWrap}>
@@ -22,8 +21,8 @@ const FormStatus: React.FC<Props> = (props: Props) => {
       }
 
       {
-        main && (
-          <span className={styles.error}>{main}</span>
+        mainError && (
+          <span className={styles.error}>{mainError}</span>
         )
       }
     </div>
