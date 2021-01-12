@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Link, useHistory } from 'react-router-dom'
 import styles from './styles.scss'
 
 import Context from '@/presentation/context/form'
@@ -11,7 +12,6 @@ import {
   Input,
   FormStatus
 } from '@/presentation/components'
-import { stat } from 'fs'
 
 type Props = {
   validation: Validation
@@ -19,6 +19,8 @@ type Props = {
 }
 
 const Login: React.FC<Props> = ({ validation, authentication }: Props) => {
+  const history = useHistory()
+
   const [state, setState] = useState({
     isLoading: false,
     email: '',
@@ -38,12 +40,26 @@ const Login: React.FC<Props> = ({ validation, authentication }: Props) => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault()
-    setState({ ...state, isLoading: true })
 
-    await authentication.auth({
-      email: state.email,
-      password: state.password
-    })
+    try {
+      if (state.isLoading || state.emailError || state.passwordError) return
+
+      setState({ ...state, isLoading: true })
+
+      const account = await authentication.auth({
+        email: state.email,
+        password: state.password
+      })
+
+      localStorage.setItem('accessToken', account.accessToken)
+      history.replace('/')
+    } catch (error) {
+      setState({
+        ...state,
+        isLoading: false,
+        mainError: error.message
+      })
+    }
   }
 
   return (
@@ -51,7 +67,7 @@ const Login: React.FC<Props> = ({ validation, authentication }: Props) => {
       <LoginHeader />
 
       <Context.Provider value={{ state, setState }}>
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form data-testid="form" className={styles.form} onSubmit={handleSubmit}>
           <h2>Login</h2>
 
           <Input type="email" name="email" id="email" placeholder="Digite seu e-mail" />
@@ -65,7 +81,7 @@ const Login: React.FC<Props> = ({ validation, authentication }: Props) => {
           >
             Entrar
           </button>
-          <span className={styles.link}>Criar conta</span>
+          <Link data-testid="signup" to="/signup" className={styles.link}>Criar conta</Link>
 
           <FormStatus />
         </form>
