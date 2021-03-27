@@ -6,7 +6,7 @@ import { Router } from 'react-router-dom'
 import { createMemoryHistory } from 'history'
 import { render, RenderResult, cleanup, fireEvent, waitFor } from '@testing-library/react'
 
-import Login from './index'
+import { Login } from '@/presentation/pages'
 
 import { ValidationStub } from '@/presentation/test/index'
 import AuthenticationSpy from '@/presentation/test/mock/authentication'
