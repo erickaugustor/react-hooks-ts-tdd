@@ -25,29 +25,44 @@ const SignUp: React.FC<Props> = ({ validation, authentication, saveAccessToken }
 
   const [state, setState] = useState({
     isLoading: false,
+    name: '',
+    nameError: '',
     email: '',
-    password: '',
     emailError: '',
+    password: '',
     passwordError: '',
-    mainError: ''
+    passwordConfirmation: '',
+    passwordConfirmationError: '',
+    mainError: '',
   })
+
+  useEffect(() => {
+    setState({
+      ...state,
+      nameError: validation.validate('name', state.name),
+      emailError: validation.validate('email', state.email),
+      passwordError: validation.validate('password', state.password),
+      passwordConfirmationError: validation.validate('passwordConfirmation', state.passwordConfirmation),
+    })
+  }, [state.name, state.email, state.password, state.passwordConfirmation])
 
   return (
     <div className={styles.signup}>
       <LoginHeader />
 
-      <Context.Provider value={{ state: {} }}>
+      <Context.Provider value={{ state, setState }}>
         <form data-testid="form" className={styles.form} onSubmit={() => ({})}>
           <h2>Criar Conta</h2>
 
           <Input type="text" name="name" id="name" placeholder="Digite seu nome" />
           <Input type="email" name="email" id="email" placeholder="Digite seu e-mail" />
           <Input type="password" name="password" id="password" placeholder="Digite sua senha" />
+          <Input type="password" name="passwordConfirmation" id="passwordConfirmation" placeholder="Repita sua senha" />
 
           <button
             data-testid="submit"
             type="submit"
-            disabled={!!state.emailError || !!state.passwordError}
+            disabled={!!state.emailError || !!state.name || !!state.passwordConfirmation || !!state.passwordError}
             className={styles.submit}
           >
             Entrar
