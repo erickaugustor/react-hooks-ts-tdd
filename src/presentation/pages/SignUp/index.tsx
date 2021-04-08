@@ -4,8 +4,7 @@ import styles from './styles.scss'
 
 import Context from '@/presentation/context/form'
 import { Validation } from '@/presentation/protocols/validation'
-import { Authentication } from '@/domain/usecases'
-import { SaveAccessToken } from '@/domain/usecases/SaveAccessToken'
+import { AddAccount } from '@/domain/usecases'
 
 import {
   LoginHeader,
@@ -16,11 +15,10 @@ import {
 
 type Props = {
   validation: Validation
-  authentication: Authentication
-  saveAccessToken: SaveAccessToken
+  addAccount: AddAccount
 }
 
-const SignUp: React.FC<Props> = ({ validation, authentication, saveAccessToken }: Props) => {
+const SignUp: React.FC<Props> = ({ validation, addAccount }: Props) => {
   const history = useHistory()
 
   const [state, setState] = useState({
@@ -46,12 +44,37 @@ const SignUp: React.FC<Props> = ({ validation, authentication, saveAccessToken }
     })
   }, [state.name, state.email, state.password, state.passwordConfirmation])
 
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    event.preventDefault()
+
+    try {
+      if (state.isLoading || state.emailError || state.passwordError) return
+
+      setState({ ...state, isLoading: true })
+
+      await addAccount.add({
+        name: state.name,
+        email: state.email,
+        password: state.password,
+        passwordConfirmation: state.passwordConfirmation,
+      })
+
+      history.replace('/')
+    } catch (error) {
+      setState({
+        ...state,
+        isLoading: false,
+        mainError: error.message
+      })
+    }
+  }
+
   return (
     <div className={styles.signup}>
       <LoginHeader />
 
       <Context.Provider value={{ state, setState }}>
-        <form data-testid="form" className={styles.form} onSubmit={() => ({})}>
+        <form data-testid="form" className={styles.form} onSubmit={handleSubmit}>
           <h2>Criar Conta</h2>
 
           <Input type="text" name="name" id="name" placeholder="Digite seu nome" />

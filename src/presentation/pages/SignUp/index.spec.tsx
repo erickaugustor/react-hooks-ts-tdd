@@ -3,18 +3,17 @@ import faker from 'faker'
 
 import { Router } from 'react-router-dom'
 import { createMemoryHistory } from 'history'
-import { cleanup, fireEvent, render, RenderResult } from '@testing-library/react'
+import { cleanup, fireEvent, render, RenderResult, waitFor } from '@testing-library/react'
 
 import { SignUp } from '@/presentation/pages'
 
 import { Helper, ValidationStub } from '@/presentation/test/index'
-import AuthenticationSpy from '@/presentation/test/mock/authentication'
-import { SaveAccessTokenMock } from '@/presentation/test/mock/saveAccessToken'
+
+import AddAccountSpy from '@/presentation/test/mock/addAccount'
 
 type SutTypes = {
   sut: RenderResult
-  authenticationSpy: AuthenticationSpy
-  saveAccessTokenMock: SaveAccessTokenMock
+  addAccountSpy: AddAccountSpy
 }
 
 type SutParams = {
@@ -25,8 +24,7 @@ const history = createMemoryHistory({ initialEntries: ['/login'] })
 
 const makeSut = (params?: SutParams): SutTypes => {
   const validationStub = new ValidationStub()
-  const authenticationSpy = new AuthenticationSpy()
-  const saveAccessTokenMock = new SaveAccessTokenMock()
+  const addAccountSpy = new AddAccountSpy()
 
   validationStub.errorMessage = params?.validationError
 
@@ -34,18 +32,34 @@ const makeSut = (params?: SutParams): SutTypes => {
     <Router history={history}>
       <SignUp
         validation={validationStub}
-        authentication={authenticationSpy}
-        saveAccessToken={saveAccessTokenMock}
+        addAccount={addAccountSpy}
       />
     </Router>
   )
 
   return {
     sut,
-    authenticationSpy,
-    saveAccessTokenMock,
+    addAccountSpy,
   }
 }
+
+const simulateValidSubmit = async (
+  sut: RenderResult, 
+  name = faker.name.findName(),
+  email = faker.internet.email(),
+  password = faker.name.findName(),
+): Promise<void> => {
+  Helper.populateField(sut, 'name', name);
+  Helper.populateField(sut, 'email', email);
+  Helper.populateField(sut, 'password', password);
+  Helper.populateField(sut, 'passwordConfirmation', password);
+
+  const form = sut.getByTextId('form')
+  fireEvent.submit(form)
+
+  await waitFor(() => form)
+}
+
 
 describe('SignUp Component', () => {
   afterEach(cleanup)
@@ -131,5 +145,32 @@ describe('SignUp Component', () => {
     Helper.populateField(sut, 'password')
     Helper.populateField(sut, 'passwordConfirmation')
     Helper.testButtonIsDisabled(sut, 'submit', false)
+  })
+
+  test('should show spinner on submit', async () => {
+    const { sut } = makeSut()
+    await simulateValidSubmit(sut)
+    Helper.testElementExists(sut, 'spinner')
+  })
+
+  test('should call AddAccount with correct values', async () => {
+    const { sut, addAccountSpy } = makeSut()
+
+    const name = faker.name.findName()
+    const email = faker.internet.email()
+    const password = faker.internet.password()
+
+    await simulateValidSubmit(sut, name, email, password)
+
+    expect(addAccountSpy.params).toEqual({ name, email, password, passwordConfirmation: password })
+  })
+
+  test('should call Authentication only once', async () => {
+    const { sut, addAccountSpy } = makeSut()
+
+    await simulateValidSubmit(sut)
+    await simulateValidSubmit(sut)
+
+    expect(addAccountSpy.callsCount).toBe(1)
   })
 })
