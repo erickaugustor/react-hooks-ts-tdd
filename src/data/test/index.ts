@@ -1,2 +1,2 @@
 export * from './MockHttp'
-export * from './MockStorage';
+export * from './MockStorage'

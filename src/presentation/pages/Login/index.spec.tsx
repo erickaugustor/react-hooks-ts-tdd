@@ -44,7 +44,7 @@ const makeSut = (params?: SutParams): SutTypes => {
   return {
     sut,
     authenticationSpy,
-    saveAccessTokenMock,
+    saveAccessTokenMock
   }
 }
 

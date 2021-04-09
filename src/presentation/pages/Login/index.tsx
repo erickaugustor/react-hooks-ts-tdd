@@ -11,7 +11,8 @@ import {
   LoginHeader,
   Footer,
   Input,
-  FormStatus
+  FormStatus,
+  SubmitButton
 } from '@/presentation/components'
 
 type Props = {
@@ -25,6 +26,7 @@ const Login: React.FC<Props> = ({ validation, authentication, saveAccessToken }:
 
   const [state, setState] = useState({
     isLoading: false,
+    isFormInvalid: true,
     email: '',
     password: '',
     emailError: '',
@@ -33,10 +35,14 @@ const Login: React.FC<Props> = ({ validation, authentication, saveAccessToken }:
   })
 
   useEffect(() => {
+    const emailError = validation.validate('email', state.email)
+    const passwordError = validation.validate('password', state.password)
+    
     setState({
       ...state,
-      emailError: validation.validate('email', state.email),
-      passwordError: validation.validate('password', state.password)
+      emailError,
+      passwordError,
+      isFormInvalid: !!emailError || !!passwordError,
     })
   }, [state.email, state.password])
 
@@ -44,7 +50,7 @@ const Login: React.FC<Props> = ({ validation, authentication, saveAccessToken }:
     event.preventDefault()
 
     try {
-      if (state.isLoading || state.emailError || state.passwordError) return
+      if (state.isLoading || state.isFormInvalid) return
 
       setState({ ...state, isLoading: true })
 
@@ -76,14 +82,8 @@ const Login: React.FC<Props> = ({ validation, authentication, saveAccessToken }:
           <Input type="email" name="email" id="email" placeholder="Digite seu e-mail" />
           <Input type="password" name="password" id="password" placeholder="Digite sua senha" />
 
-          <button
-            data-testid="submit"
-            type="submit"
-            disabled={!!state.emailError || !!state.passwordError}
-            className={styles.submit}
-          >
-            Entrar
-          </button>
+          <SubmitButton text="Entrar" />
+
           <Link data-testid="signup" to="/signup" className={styles.link}>Criar conta</Link>
 
           <FormStatus />

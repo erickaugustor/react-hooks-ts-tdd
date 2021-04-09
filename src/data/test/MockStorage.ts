@@ -1,4 +1,4 @@
-import { SetStorage } from "@/data/protocols/cache/SetStorage"
+import { SetStorage } from '@/data/protocols/cache/SetStorage'
 
 export class SetStorageMock implements SetStorage {
   key: string
